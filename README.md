@@ -1,117 +1,34 @@
-# 🎸 Arpeg.io (idea base)
+# 🎸 Arpeg.io
 
-![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-purple?style=flat&logo=kotlin)
-![Platform](https://img.shields.io/badge/Platform-Android-green?style=flat&logo=android)
-![Status](https://img.shields.io/badge/Status-Development-orange)
-![License](https://img.shields.io/badge/License-MIT-blue)
+*Aplicación nativa para Android que soluciona la fragmentación en el estudio musical, ofreciendo un entorno unificado interactivo.*
 
-**Tu estudio de música de bolsillo: Sincronización inteligente de Audio y Partituras.**
+## 📝 Descripción
+Arpeg.io es un proyecto desarrollado como Trabajo de Fin de Grado (TFG) para el ciclo de Desarrollo de Aplicaciones Multiplataforma (DAM). Su objetivo principal es facilitar el aprendizaje musical permitiendo a los músicos visualizar tablaturas interactivas (en formatos estándar como Guitar Pro) sincronizadas en tiempo real con la reproducción de su referencia auditiva original.
 
----
+## ✨ Características Principales
+- **Sincronización Precisa:** Desplazamiento automático de la tablatura ajustado milimétricamente al audio mediante la API de YouTube.
+- **Catálogo Híbrido:** Acceso a una biblioteca compartida en la nube y gestión de archivos locales.
+- **Reproductor Local Avanzado:** Motor de reproducción offline con control de velocidad (BPM) y metrónomo visual/sonoro.
+- **Soporte Multi-Instrumento:** Cambio dinámico entre las distintas pistas (guitarra, bajo, batería, etc.) de una misma partitura.
 
-## 📄 Descripción del Proyecto
+## 🛠️ Stack Tecnológico y Arquitectura
+El proyecto sigue los principios de **Clean Architecture** estructurándose bajo el patrón **MVVM** (Model-View-ViewModel), separando claramente la lógica de negocio, la gestión de estado y la interfaz de usuario.
 
-**Arpeg.io** es una aplicación nativa para Android desarrollada como **Trabajo de Fin de Grado (TFG)** del ciclo de Desarrollo de Aplicaciones Multiplataforma (DAM).
+- **UI:** Interfaz completamente declarativa construida con **Jetpack Compose** y flujos reactivos (`StateFlow`).
+- **Asincronía:** **Kotlin Coroutines** para la gestión concurrente de flujos de datos sin bloquear el hilo principal.
+- **Datos y Persistencia:**
+  - **Firebase Firestore:** Base de datos NoSQL para gestionar en tiempo real el catálogo colaborativo en la nube.
+  - **Room (SQLite):** Persistencia local para almacenar partituras del usuario y permitir su funcionamiento sin conexión.
+- **Herramientas de Renderizado:** Integración de la librería **AlphaTab** sobre un entorno Web embebido para el dibujo e interacción de las partituras.
 
-La aplicación soluciona la problemática de la fragmentación de herramientas en el estudio musical. Permite a los músicos visualizar **tablaturas interactivas** (procedentes de servicios web como Songsterr) simultáneamente con la reproducción de su **referencia auditiva** (YouTube Oficial), todo en una interfaz unificada de pantalla dividida ("Split-Screen").
+## 🧪 Testing y Calidad de Código
+El proyecto cuenta con un entorno de pruebas robusto diseñado para garantizar la estabilidad de la lógica de negocio y los flujos de datos.
 
-El sistema actúa como un orquestador de APIs, automatizando la búsqueda y sincronización de recursos para ofrecer una experiencia de usuario fluida y libre de distracciones.
+- **Pruebas Unitarias:** Implementadas con **JUnit**, utilizando **Mockito** para generar dobles de prueba y aislar el repositorio (evitando dependencias directas con Firestore o Room).
+- **Testeo Asíncrono:** Uso de reglas personalizadas con `UnconfinedTestDispatcher` para forzar la ejecución síncrona de las corrutinas durante los tests.
+- **Cobertura con JaCoCo:** El análisis de calidad del código está estrictamente configurado. Las pruebas base que Java y Android incorporan por defecto no se toman en cuenta para evitar inflar las métricas de forma artificial. El porcentaje de cobertura mínima aceptable está definido manualmente de forma exigente, asegurando la validación de la lógica real tras filtrar clases autogeneradas.
 
----
-
-## 🚀 Funcionalidades Principales
-
-### 1. 🔍 Búsqueda Cruzada Inteligente
-Mediante un único input del usuario, el sistema bifurca la petición para localizar:
-* **Audio:** Prioriza versiones "Official Audio" o "Topic" en YouTube para garantizar alta fidelidad sonora.
-* **Partitura:** Realiza una búsqueda filtrada en bases de datos de tablaturas (Songsterr) para encontrar la versión exacta de la canción.
-
-### 2. 📺 Interfaz de Estudio (Split-View)
-* **Panel Superior:** Reproductor nativo de YouTube con controles de *seek*, pausa y volumen.
-* **Panel Inferior:** WebView optimizado. Utiliza **Inyección de JavaScript** para manipular el DOM de la web destino, eliminando anuncios, cabeceras y menús de navegación, maximizando el área útil para la partitura.
-
-### 3. ⭐ Gestión de Repertorio (Persistencia)
-* Almacenamiento local mediante **Room Database (SQLite)**.
-* Permite guardar canciones favoritas para acceder rápidamente al par *VideoID + URL* sin necesidad de realizar nuevas peticiones a la API.
-
----
-
-## 🛠️ Stack Tecnológico
-
-El proyecto sigue las directrices de **Arquitectura Moderna de Android** y el patrón **MVVM (Model-View-ViewModel)**.
-
-| Categoría | Tecnología | Justificación Técnica |
-| :--- | :--- | :--- |
-| **Lenguaje** | **Kotlin** | Estándar actual de desarrollo Android. |
-| **Arquitectura** | **MVVM** | Separación de lógica de negocio y UI. |
-| **Networking** | **Retrofit 2 + Gson** | Consumo de APIs REST y parseo de JSON. |
-| **Concurrencia** | **Coroutines** | Gestión de hilos en segundo plano (I/O). |
-| **Multimedia** | **Android-YouTube-Player** | Librería eficiente para embed de video (IFrame API wrapper). |
-| **Web** | **WebView + JS Injection** | Renderizado y limpieza de interfaces web externas. |
-| **Persistencia** | **Room** | Abstracción sobre SQLite para guardar favoritos. |
-| **Imágenes** | **Glide** | Carga asíncrona y cacheo de carátulas. |
-
----
-
-## 🧩 Arquitectura del Sistema
-
-El flujo de datos de la aplicación se estructura de la siguiente manera:
-
-
-
-1.  **Capa de Vista (Activity/Fragment):** Recoge el input y observa los cambios en el ViewModel (LiveData/StateFlow).
-2.  **Capa de ViewModel:** Gestiona el estado de la UI y lanza las Corrutinas.
-3.  **Capa de Modelo (Repository):**
-    * Consulta a **YouTube Data API v3** para obtener el `videoId`.
-    * Consulta a **Google Custom Search JSON API** para obtener la `targetUrl`.
-4.  **Capa de Datos Local:** Si no hay conexión, intenta recuperar datos de **Room**.
-
----
-
-## ⚙️ Configuración e Instalación
-
-Para ejecutar este proyecto en local, necesitas configurar las claves de API.
-
-1.  **Clonar el repositorio:**
-    ```bash
-    git clone [https://github.com/tu-usuario/Arpeg.io.git](https://github.com/tu-usuario/Arpeg.io.git)
-    ```
-2.  **Configurar API Keys:**
-    Crea un archivo `apikey.properties` (o en `local.properties`) en la raíz del proyecto y añade tus claves de Google Cloud Console:
-    ```properties
-    YOUTUBE_API_KEY="TU_CLAVE_AQUI"
-    GOOGLE_SEARCH_KEY="TU_CLAVE_AQUI"
-    SEARCH_ENGINE_ID="TU_CX_ID_AQUI"
-    ```
-3.  **Compilar:**
-    Abre el proyecto en **Android Studio** y sincroniza Gradle.
-
----
-
-## 🎓 Competencias del Ciclo (DAM)
-
-Este proyecto evidencia la adquisición de competencias en los siguientes módulos:
-
-* **PMDM (Programación Multimedia y Dispositivos Móviles):** Desarrollo de interfaces nativas complejas, integración de sensores/multimedia y gestión del ciclo de vida.
-* **PSP (Programación de Servicios y Procesos):** Programación multihilo (Corrutinas) y comunicaciones de red seguras.
-* **AD (Acceso a Datos):** Implementación de persistencia local (Room) y consumo de datos remotos.
-* **DI (Desarrollo de Interfaces):** Diseño adaptable y experiencia de usuario (UX).
-
----
-
-## 🔮 Mejoras Futuras (Roadmap)
-
-* [ ] Implementación de afinador cromático usando el micrófono.
-* [ ] Modo "Offline" con descarga de PDFs.
-* [ ] Sincronización de favoritos en la nube con Firebase Auth.
-
----
-
-## 👤 Autor
-
-**[Jorge del Hoyo Ballestín]**
-* **Grado:** 2º DAM (Desarrollo de Aplicaciones Multiplataforma)
-* **Centro:** [IES Pablo Serrano]
-* **Contacto:** [jdhb2004@gmail.com]
-
----
+## 🚀 Instalación y Uso
+1. Clona el repositorio en tu máquina local:
+   ```bash
+   git clone [https://github.com/Megadeftro17/Arpeg.io.git](https://github.com/Megadeftro17/Arpeg.io.git)
